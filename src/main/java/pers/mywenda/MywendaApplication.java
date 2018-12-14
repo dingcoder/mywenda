@@ -11,6 +11,7 @@ public class MywendaApplication {
     private static final Logger logger = LoggerFactory.getLogger(MywendaApplication.class);
 
     public static void main(String[] args) {
+        logger.info("druid 启动啦");
         SpringApplication.run(MywendaApplication.class, args);
     }
 
