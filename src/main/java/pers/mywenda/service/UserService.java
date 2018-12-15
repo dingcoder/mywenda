@@ -71,4 +71,33 @@ public class UserService {
 //        票号返回
         return ticket.getTicket();
     }
+
+    //    登录
+    public Map<String, Object> login(String username, String password) {
+        Map<String, Object> map = new HashMap<>();
+        if (StringUtils.isBlank(username)) {
+            map.put("msg", "用户名不能空");
+            return map;
+        }
+        if (StringUtils.isBlank(password)) {
+            map.put("msg", "密码不能为空");
+            return map;
+        }
+
+        User user = userDAO.selectByName(username);
+        if (user == null) {
+            map.put("msg", "用户名不存在");
+            return map;
+        }
+
+//      比对密码
+        if (!WendaUtil.MD5(password + user.getSalt()).equals(user.getPassword())) {
+            map.put("msg", "密码不正确");
+            return map;
+        }
+        String ticket = addLoginTicket(user.getId());
+        map.put("ticket", ticket);
+        map.put("userId", user.getId());
+        return map;
+    }
 }
