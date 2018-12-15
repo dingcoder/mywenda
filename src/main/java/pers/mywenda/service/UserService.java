@@ -5,20 +5,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pers.mywenda.dao.LoginTicketDao;
 import pers.mywenda.dao.UserDAO;
+import pers.mywenda.model.LoginTicket;
 import pers.mywenda.model.User;
 import pers.mywenda.util.WendaUtil;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     @Autowired
     UserDAO userDAO;
+    @Autowired
+    LoginTicketDao loginTicketDao;
 
     //    注册
     public Map<String, Object> register(String username, String password) {
@@ -49,7 +50,25 @@ public class UserService {
         user.setPassword(WendaUtil.MD5(password + user.getSalt()));
         userDAO.addUser(user);
 
+//        登录
+        String ticket = addLoginTicket(user.getId());
+        map.put("ticket", ticket);
+        return map;
+    }
 
-        return null;
+    private String addLoginTicket(int userId) {
+        LoginTicket ticket = new LoginTicket();
+        ticket.setUserId(userId);
+        Date date = new Date();
+//        疑问这个是什么意思
+//        设置过期时间
+        date.setTime(date.getTime() + 1000 * 3600 * 24);
+        ticket.setExpired(date);
+        ticket.setStatus(0);
+        ticket.setTicket(UUID.randomUUID().toString().replaceAll("-", ""));
+//      把ticket存入数据库
+        loginTicketDao.addTicket(ticket);
+//        票号返回
+        return ticket.getTicket();
     }
 }
