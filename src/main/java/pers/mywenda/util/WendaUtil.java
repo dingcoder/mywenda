@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.MessageDigest;
 import java.util.Map;
 
 public class WendaUtil {
@@ -40,6 +41,23 @@ public class WendaUtil {
         };
         try {
             byte[] btInput = key.getBytes();
+//            获取MD5摘要算法的 MessageDisgest 对象
+            MessageDigest mdInst = MessageDigest.getInstance("MD5");
+//            使用指定的字节更新摘要
+            mdInst.update(btInput);
+//            获得密文
+            byte[] md = mdInst.digest();
+
+            int j = md.length;
+            char str[] = new char[j * 2];
+            int k = 0;
+            for (int i = 0; i < j; i++) {
+                byte byte0 = md[i];
+                str[k++] = hexDigits[byte0 >>> 4 & 0xf];
+                str[k++] = hexDigits[byte0 & 0xf];
+            }
+            return new String(str);
+
         } catch (Exception e) {
             logger.error("生成MD5失败", e);
             return null;

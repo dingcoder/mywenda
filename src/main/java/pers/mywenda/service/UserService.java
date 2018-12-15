@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pers.mywenda.dao.UserDAO;
 import pers.mywenda.model.User;
+import pers.mywenda.util.WendaUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +46,7 @@ public class UserService {
         user.setSalt(UUID.randomUUID().toString().substring(0, 5));
         String head = String.format("http://images.nocoder.com/head/%dt.png", new Random().nextInt(1000));
         user.setHeadUrl(head);
+        user.setPassword(WendaUtil.MD5(password + user.getSalt()));
         userDAO.addUser(user);
 
 
