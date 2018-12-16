@@ -100,4 +100,8 @@ public class UserService {
         map.put("userId", user.getId());
         return map;
     }
+
+    public void logout(String ticket) {
+        loginTicketDao.updateStatus(ticket, 1);
+    }
 }

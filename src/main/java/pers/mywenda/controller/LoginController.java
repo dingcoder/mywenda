@@ -6,9 +6,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import pers.mywenda.async.EventModel;
+import pers.mywenda.async.EventProducer;
+import pers.mywenda.async.EventType;
 import pers.mywenda.service.UserService;
 
 import javax.servlet.http.Cookie;
@@ -21,7 +25,10 @@ public class LoginController {
     @Autowired
     UserService userService;
 
-    //    注册
+    @Autowired
+    EventProducer eventProducer;
+
+    //    注册的controller
     @RequestMapping(path = {"/reg/"}, method = {RequestMethod.POST})
     public String reg(Model model, @RequestParam("username") String username,
                       @RequestParam("password") String password,
@@ -53,7 +60,7 @@ public class LoginController {
         }
         return null;
     }
-
+//    转到注册、登录页面的controller
     @RequestMapping(path = {"/reglogin"}, method = {RequestMethod.GET})
     public String regloginPage(Model model, @RequestParam(value = "next", required = false) String next) {
         model.addAttribute("next", next);
@@ -61,6 +68,7 @@ public class LoginController {
         return "login";
     }
 
+//    登录的controller
     @RequestMapping(path = {"/login/"}, method = {RequestMethod.POST})
     public String login(Model model,
                         @RequestParam("username") String username,
@@ -78,11 +86,32 @@ public class LoginController {
                 }
                 response.addCookie(cookie);
 
+                eventProducer.fireEvent(new EventModel(EventType.LOGIN)
+                        .setExt("username", username)
+                        .setExt("email", "527663565@qq.com")
+                        .setActorId((Integer) map.get("userId")));
+                if (StringUtils.isNotBlank(next)) {
+                    return "redirect:" + next;
+                }
+
+                return "redirect:/";
+            } else {
+                model.addAttribute("msg", map.get("msg"));
+                return "login";
             }
-
+        } catch (Exception e) {
+            logger.error("登录异常" + e.getMessage());
+            return "login";
         }
+    }
 
-        return null;
+    //    退出登录
+//    根据cookie修改登录状态为 1
+    @RequestMapping(path = {"/logout"}, method = {RequestMethod.GET, RequestMethod.POST})
+    public String logout(@CookieValue("ticket") String ticket) {
+        userService.logout(ticket);
+        return "redirect:/";
+
     }
 
 
